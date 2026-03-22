@@ -7,6 +7,11 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(session({
+    secret: 'secret-key',
+    resave: false,
+    saveUninitialized: true
+}));
 
 // Test database connection
 async function testConnection() {
@@ -70,6 +75,60 @@ app.post('/api/register', async (req, res) => {
         console.error('Registration error:', error);
         res.status(500).json({
             error: 'Failed to register user'
+        });
+    }
+});
+// ======================
+// USER LOGIN
+// ======================
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                error: 'Email and password are required'
+            });
+        }
+
+        // Find user by email
+        const user = await User.findOne({
+            where: { email }
+        });
+
+        // If user not found
+        if (!user) {
+            return res.status(401).json({
+                error: 'Invalid email or password'
+            });
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        // If password incorrect
+        if (!isMatch) {
+            return res.status(401).json({
+                error: 'Invalid email or password'
+            });
+        }
+
+        // Create session
+        req.session.user = {
+            id: user.id,
+            email: user.email
+        };
+
+        res.json({
+            message: 'Login successful'
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            error: 'Failed to login'
         });
     }
 });
