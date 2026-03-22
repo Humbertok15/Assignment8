@@ -8,7 +8,35 @@ const db = new Sequelize({
   logging: console.log
 });
 
-// Define Project model
+
+// ======================
+// USER MODEL
+// ======================
+const User = db.define('User', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+});
+
+
+// ======================
+// PROJECT MODEL
+// ======================
 const Project = db.define('Project', {
     id: {
         type: DataTypes.INTEGER,
@@ -35,7 +63,10 @@ const Project = db.define('Project', {
     }
 });
 
-// Define Task model
+
+// ======================
+// TASK MODEL
+// ======================
 const Task = db.define('Task', {
     id: {
         type: DataTypes.INTEGER,
@@ -66,16 +97,35 @@ const Task = db.define('Task', {
     }
 });
 
-// Export for use in other files
-module.exports = { db, Project, Task };
 
-// Create database and tables
+// ======================
+// RELATIONSHIPS
+// ======================
+
+// User → Projects
+User.hasMany(Project, { foreignKey: 'userId' });
+Project.belongsTo(User, { foreignKey: 'userId' });
+
+// Project → Tasks
+Project.hasMany(Task, { foreignKey: 'projectId' });
+Task.belongsTo(Project, { foreignKey: 'projectId' });
+
+
+// ======================
+// EXPORTS
+// ======================
+module.exports = { db, User, Project, Task };
+
+
+// ======================
+// DATABASE SETUP
+// ======================
 async function setupDatabase() {
     try {
         await db.authenticate();
         console.log('Connection to database established successfully.');
         
-        await db.sync({ force: true });
+        await db.sync({ force: true }); // WARNING: wipes data each run
         console.log('Database and tables created successfully.');
         
         await db.close();
@@ -84,7 +134,10 @@ async function setupDatabase() {
     }
 }
 
-// Run setup if this file is executed directly
+
+// ======================
+// RUN SETUP
+// ======================
 if (require.main === module) {
     setupDatabase();
 }
