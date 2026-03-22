@@ -162,8 +162,9 @@ app.post('/api/logout', (req, res) => {
         res.status(400).json({ error: 'No active session' });
     }
 });
-
+// ======================
 // PROJECT ROUTES
+// ======================
 
 // GET /api/projects - Get all projects
 app.get('/api/projects', async (req, res) => {
@@ -251,7 +252,9 @@ app.delete('/api/projects/:id', async (req, res) => {
     }
 });
 
+// ======================
 // TASK ROUTES
+// ======================
 
 // GET /api/tasks - Get all tasks
 app.get('/api/tasks', async (req, res) => {
