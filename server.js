@@ -19,6 +19,60 @@ async function testConnection() {
 
 testConnection();
 
+// ======================
+// USER REGISTRATION
+// ======================
+
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+
+        // Check required fields
+        if (!username || !email || !password) {
+            return res.status(400).json({
+                error: 'Username, email, and password are required'
+            });
+        }
+
+        // Check if email already exists
+        const existingUser = await User.findOne({
+            where: { email }
+        });
+
+        if (existingUser) {
+            return res.status(400).json({
+                error: 'User with this email already exists'
+            });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const newUser = await User.create({
+            username,
+            email,
+            password: hashedPassword
+        });
+
+        // Success response
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                id: newUser.id,
+                username: newUser.username,
+                email: newUser.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({
+            error: 'Failed to register user'
+        });
+    }
+});
+
 // PROJECT ROUTES
 
 // GET /api/projects - Get all projects
