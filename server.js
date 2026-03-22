@@ -132,6 +132,36 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
+// ======================
+// AUTHENTICATION MIDDLEWARE
+// ======================
+
+function authMiddleware(req, res, next) {
+    // Check if user session exists
+    if (req.session && req.session.user) {
+        // Attach user info to request object
+        req.user = req.session.user;
+        next(); // allow the request to continue
+    } else {
+        res.status(401).json({ error: 'Unauthorized: Please log in' });
+    }
+}
+// ======================
+// USER LOGOUT
+// ======================
+app.post('/api/logout', (req, res) => {
+    if (req.session) {
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Logout error:', err);
+                return res.status(500).json({ error: 'Failed to logout' });
+            }
+            res.json({ message: 'Logout successful' });
+        });
+    } else {
+        res.status(400).json({ error: 'No active session' });
+    }
+});
 
 // PROJECT ROUTES
 
